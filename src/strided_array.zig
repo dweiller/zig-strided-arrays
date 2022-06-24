@@ -30,10 +30,10 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
         const info = @typeInfo(IndexType);
         comptime {
             if (info != .Int or info.Int.signedness == .signed) {
-                @compileError("StridedArrayView IndexType must be a unsigned integer type");
+                @compileError("StridedArrayView IndexType must be an unsigned integer type");
             }
             if (info.Int.bits > 64) {
-                @compileError(std.fmt.comptimePrint("Try to make a StridedArrayView with {d}-bit IndexType; maximum allowed bit size is 64", .{info.Int.bits}));
+                @compileError(std.fmt.comptimePrint("Maximum allowed bit size is for IndexType is 64; got {d}-bit type", .{info.Int.bits}));
             }
         }
 
