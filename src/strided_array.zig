@@ -412,13 +412,21 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             };
         }
 
-        pub fn copyToOwnedSlice(self: Self, allocator: Allocator) []T {
-            const buf = allocator.alloc(T, self.size());
-            var iter = self.iterator();
+        /// Copy data to `buf`. See `copyToAlloc()` for a wrapper that takes an allocator.
+        pub fn copyTo(self: Self, buf: []T) void {
+            std.debug.assert(buf.len >= self.size());
+            var iter = self.iterate();
             var i: usize = 0;
             while (iter.next()) |val| : (i += 1) {
                 buf[i] = val;
             }
+        }
+
+        /// Copy data to a newly allocated slice.
+        pub fn copyToAlloc(self: Self, allocator: Allocator) ![]T {
+            const buf = try allocator.alloc(T, self.size());
+            self.copyTo(buf);
+            return buf;
         }
 
         pub fn transpose(self: *Self, dim_1: usize, dim_2: usize) void {
