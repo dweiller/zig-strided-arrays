@@ -534,7 +534,8 @@ var one_to_23 = [24]TestArrayView.EltType{
 const testing = std.testing;
 
 test {
-    std.testing.refAllDecls(@This());
+    std.testing.refAllDeclsRecursive(@This());
+    std.testing.refAllDeclsRecursive(TestArrayView);
 }
 
 test "strided_array refAllDecls" {
