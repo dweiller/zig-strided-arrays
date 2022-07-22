@@ -533,7 +533,7 @@ var one_to_23 = [24]TestArrayView.EltType{
 
 const testing = std.testing;
 
-test "" {
+test {
     std.testing.refAllDecls(@This());
 }
 
@@ -746,31 +746,10 @@ test "StridedArrayView.coordOfSliceIndex()" {
     array_view.stride = .{ 4, 1, 1 };
     array_view.shape = .{ 5, 3, 2 };
     try testing.expectError(ViewError.OverlappingElementsUnsupported, array_view.coordOfSliceIndex(4));
-    // try testing.expectEqual(TestArrayView.Indices{ 0, 0, 0 }, array_view.coordOfSliceIndex(4));
-    // try testing.expectEqual(TestArrayView.Indices{ 0, 1, 0 }, array_view.coordOfSliceIndex(5));
-    // try testing.expectEqual(TestArrayView.Indices{ 0, 2, 0 }, array_view.coordOfSliceIndex(6));
-    // // BUG: currently failing, .{0, 3, 0} passes, which is not valid
-    // try testing.expectEqual(TestArrayView.Indices{ 0, 2, 1 }, array_view.coordOfSliceIndex(7));
-    // try testing.expectEqual(TestArrayView.Indices{ 1, 0, 0 }, array_view.coordOfSliceIndex(8));
-    // try testing.expectEqual(TestArrayView.Indices{ 1, 1, 0 }, array_view.coordOfSliceIndex(9));
-    // try testing.expectEqual(TestArrayView.Indices{ 1, 2, 0 }, array_view.coordOfSliceIndex(10));
-    // // BUG: currently failing, .{1, 3, 0} passes, which is not valid
-    // try testing.expectEqual(TestArrayView.Indices{ 1, 2, 1 }, array_view.coordOfSliceIndex(11));
 
     // transposed
     array_view.transpose(1, 2);
     try testing.expectError(ViewError.OverlappingElementsUnsupported, array_view.coordOfSliceIndex(4));
-    // try testing.expectEqual(TestArrayView.Indices{ 0, 0, 0 }, array_view.coordOfSliceIndex(4));
-    // try testing.expectEqual(TestArrayView.Indices{ 0, 1, 0 }, array_view.coordOfSliceIndex(5));
-    // // BUG: currently failing .{0, 2, 0} passes, which is not valid
-    // try testing.expectEqual(TestArrayView.Indices{ 0, 2, 0 }, array_view.coordOfSliceIndex(6));
-    // // BUG: currently failing .{0, 2, 0} passes, which is not valid
-    // try testing.expectEqual(TestArrayView.Indices{ 0, 1, 2 }, array_view.coordOfSliceIndex(7));
-    // try testing.expectEqual(TestArrayView.Indices{ 1, 0, 0 }, array_view.coordOfSliceIndex(8));
-    // try testing.expectEqual(TestArrayView.Indices{ 1, 1, 0 }, array_view.coordOfSliceIndex(9));
-    // try testing.expectEqual(TestArrayView.Indices{ 1, 2, 0 }, array_view.coordOfSliceIndex(10));
-    // // BUG: currently failing .{1, 3, 0} passes, which is not valid
-    // try testing.expectEqual(TestArrayView.Indices{ 1, 1, 2 }, array_view.coordOfSliceIndex(11));
 
     // overlapping but not unit
     array_view.offset = 0;
