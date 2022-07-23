@@ -79,11 +79,11 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
 
         /// Create a packed view (i.e. a view with no gaps between elements in the underlying slice)
         pub fn ofSlicePacked(items: []T, shape: Indices) !Self {
-            return ofSliceStridedShape(items, strideOfShapePacked(shape), shape);
+            return ofSliceStrided(items, strideOfShapePacked(shape), shape);
         }
 
         /// Create a view with the given `stride`s.
-        pub fn ofSliceStridedShape(items: []T, stride: Stride, shape: Indices) !Self {
+        pub fn ofSliceStrided(items: []T, stride: Stride, shape: Indices) !Self {
             return ofSliceExtra(items, 0, stride, shape);
         }
 
