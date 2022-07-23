@@ -1,6 +1,6 @@
 //! This module provides a generic StridedArrayView type.
 //!
-//! A strided array view is an `n`-dimensional view into a slice of type `[]T`. A particular view allows access to a subset of the slice via `n`-dimensional coordinates, or by iterating over every element of the subset in row-major order.
+//! A strided array view is an `n`-dimensional view into a slice of type `[]T`. A particular view allows access to a subset of the slice via `n`-dimensional coordinates, or by iterating over elements of the subset in row-major order.
 //!
 //! Strided array views also allow cheap _logical_ reordering of the underlying slice, allowing dimensions to be arbritrarily transposed, flipped and rotated and resized (as long as the new shape makes sense).
 
@@ -77,14 +77,17 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             return self.sliceIndex(max_coord);
         }
 
+        /// Create a packed view (i.e. a view with no gaps between elements in the underlying slice)
         pub fn ofSlicePacked(items: []T, shape: Indices) !Self {
             return ofSliceStridedShape(items, strideOfShapePacked(shape), shape);
         }
 
+        /// Create a view with the given `stride`s.
         pub fn ofSliceStridedShape(items: []T, stride: Stride, shape: Indices) !Self {
             return ofSliceExtra(items, 0, stride, shape);
         }
 
+        /// Create a view with the given `stride`s and `offset` into the underylying slice.
         pub fn ofSliceExtra(items: []T, offset: IndexType, stride: Stride, shape: Indices) !Self {
             const view = Self{
                 .items = items,
@@ -107,10 +110,14 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             return true;
         }
 
+        /// Returns the index in the underlying slice of the element at `coord`,
+        /// or `null` if `coord` is not valid.
         pub fn sliceIndexOrNull(self: Self, coord: Indices) ?usize {
             return if (self.isValid(coord)) self.sliceIndex(coord) else null;
         }
 
+        /// Returns the index in the underlying slice of the element at `coord`.
+        /// The caller guarantees that `coord` is valid.
         pub fn sliceIndex(self: Self, coord: Indices) usize {
             var index: StrideType = @as(StrideType, self.offset);
             comptime var i = 0;
@@ -120,11 +127,13 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             return @intCast(usize, index);
         }
 
+        /// Returns the iteration index for row-major ordering of the element at `coord`,
+        /// or `null` if `coord` if not valid.
         pub fn iterIndexOrNull(self: Self, coord: Indices) ?usize {
             return if (self.isValid(coord)) self.iterIndex(coord) else null;
         }
 
-        /// return index for row-major ordering
+        /// Returns the iteration index for row-major ordering or the element at `coord`.
         pub fn iterIndex(self: Self, coord: Indices) usize {
             var index: usize = coord[num_dims - 1];
 
@@ -137,7 +146,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             return index;
         }
 
-        /// returns coordinates in row-major order
+        /// Returns coordinates in row-major order
         pub fn coordOfIterIndex(self: Self, index: usize) Indices {
             var coord: Indices = undefined;
             var idx = index;
@@ -178,7 +187,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             return overlapping;
         }
 
-        /// returns ViewError.OverlappingElementsUnsupported if the view has overlapping elements
+        /// Returns ViewError.OverlappingElementsUnsupported if the view has overlapping elements
         fn coordOfSliceIndex(self: Self, index: IndexType) !Indices {
             const dims_in_order = self.strideOrdering();
             if (self.viewOverlapping(dims_in_order)) {
@@ -195,31 +204,32 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             return coord;
         }
 
-        /// returns the element at `coord`, or `null` if `coord` is invalid
+        /// Returns the element at `coord`, or `null` if `coord` is invalid.
         pub fn getOrNull(self: Self, coord: Indices) ?T {
             return if (self.isValid(coord)) self.get(coord) else null;
         }
 
-        /// returns the element at `coord`; asserts that `coord` is valid
+        /// Returns the element at `coord`; asserts that `coord` is valid.
         pub fn get(self: Self, coord: Indices) T {
             return self.items[self.sliceIndex(coord)];
         }
 
-        /// returns a pointer to the element at `coord`, or `null` if `coord` is invalid
+        /// Returns a pointer to the element at `coord`, or `null` if `coord` is invalid.
         pub fn getPtrOrNull(self: Self, coord: Indices) ?*T {
             return if (self.isValid(coord)) self.getPtr(coord) else null;
         }
 
-        /// returns a pointer to the element at `coord`; asserts that `coord` is valid
+        /// Returns a pointer to the element at `coord`; asserts that `coord` is valid.
         pub fn getPtr(self: Self, coord: Indices) *T {
             return &self.items[self.sliceIndex(coord)];
         }
 
-        /// sets the value at `coord`; asserts that `coord` is valid
+        /// Sets the value at `coord`; asserts that `coord` is valid.
         pub fn set(self: Self, coord: Indices, value: T) void {
             self.items[self.sliceIndex(coord)] = value;
         }
 
+        /// Returns the size of a view with the provided `shape`.
         pub fn sizeOf(shape: Indices) usize {
             var result: usize = 1;
             comptime var i = 0;
@@ -229,6 +239,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             return result;
         }
 
+        /// Returns the size of a view.
         pub fn size(self: Self) usize {
             return sizeOf(self.shape);
         }
@@ -347,18 +358,22 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             }
         };
 
+        /// Iterate over the whole view.
         pub fn iterate(self: Self) Iterator {
             return self.iterateFrom(0);
         }
 
+        /// Iterate from (iteration) index `first` to the end of the view.
         pub fn iterateFrom(self: Self, first: usize) Iterator {
             return self.iterateRange(first, self.size());
         }
 
+        /// Iterate over the view up to (iteration) index `last`.
         pub fn iterateTo(self: Self, last: usize) Iterator {
             return self.iterateRange(0, last);
         }
 
+        /// Iterate from (iteration) index `first` to `last`.
         pub fn iterateRange(self: Self, first: usize, last: usize) Iterator {
             return Iterator{
                 .index = first,
@@ -429,11 +444,13 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             return buf;
         }
 
+        /// Transpose dimensions `dim_1` and `dim_2`.
         pub fn transpose(self: *Self, dim_1: usize, dim_2: usize) void {
             std.mem.swap(StrideType, &self.stride[dim_1], &self.stride[dim_2]);
             std.mem.swap(IndexType, &self.shape[dim_1], &self.shape[dim_2]);
         }
 
+        /// Flip dimension `dim` to run in the opposite direction.
         pub fn flip(self: *Self, dim: usize) void {
             self.offset = @intCast(IndexType, @as(StrideType, self.offset) + self.stride[dim] * (self.shape[dim] - 1));
             self.stride[dim] = -self.stride[dim];
