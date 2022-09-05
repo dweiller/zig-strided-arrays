@@ -1,6 +1,10 @@
 const std = @import("std");
 
-pub fn ForAllSymmetries(comptime T: type, comptime TestArrayView: type, func: fn (T, TestArrayView) anyerror!void) type {
+pub fn ForAllSymmetries(
+    comptime T: type,
+    comptime TestArrayView: type,
+    comptime func: fn (T, TestArrayView) anyerror!void,
+) type {
     return struct {
         const Self = @This();
 
@@ -40,4 +44,3 @@ pub fn ForAllSymmetries(comptime T: type, comptime TestArrayView: type, func: fn
         }
     };
 }
-

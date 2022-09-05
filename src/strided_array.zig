@@ -723,8 +723,8 @@ test "StridedArrayView.viewOverlapping()" {
             try testing.expect(!av.viewOverlapping(av.strideOrdering()));
         }
     };
-    const no_overlap = ForAllSymmetries(void, TestArrayView, tests.noOverlap){ .ctx = .{} };
-    const overlap = ForAllSymmetries(void, TestArrayView, tests.overlap){ .ctx = .{} };
+    const no_overlap = ForAllSymmetries(void, TestArrayView, tests.noOverlap){ .ctx = {} };
+    const overlap = ForAllSymmetries(void, TestArrayView, tests.overlap){ .ctx = {} };
 
     try no_overlap.run(&array_view);
 
