@@ -51,8 +51,8 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
 
         fn strideOfShapePacked(shape: Indices) Stride {
             var stride: Stride = undefined;
-            for (stride) |_, i| {
-                stride[i] = shape[i];
+            for (&stride, shape) |*stride_elt, shape_elt| {
+                stride_elt.* = shape_elt;
             }
             stride[stride.len - 1] = 1;
             var i = shape.len - 1;
@@ -71,7 +71,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
 
         fn maxCoordIndex(self: Self) usize {
             var max_coord = self.shape;
-            for (max_coord) |*v| {
+            for (&max_coord) |*v| {
                 v.* -= 1;
             }
             return self.sliceIndex(max_coord);
@@ -101,9 +101,8 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
         }
 
         fn isValid(self: Self, coord: Indices) bool {
-            comptime var i = 0;
-            inline while (i < num_dims) : (i += 1) {
-                if (coord[i] >= self.shape[i]) {
+            inline for (coord, self.shape) |coord_elt, shape_elt| {
+                if (coord_elt >= shape_elt) {
                     return false;
                 }
             }
@@ -120,9 +119,8 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
         /// The caller guarantees that `coord` is valid.
         pub fn sliceIndex(self: Self, coord: Indices) usize {
             var index: StrideType = @as(StrideType, self.offset);
-            comptime var i = 0;
-            inline while (i < num_dims) : (i += 1) {
-                index += coord[i] * self.stride[i];
+            inline for (coord, self.stride) |coord_elt, stride_elt| {
+                index += coord_elt * stride_elt;
             }
             return @intCast(usize, index);
         }
@@ -167,9 +165,8 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
         fn strideOrdering(self: Self) [num_dims]usize {
             var dims = comptime dims: {
                 var res: [num_dims]usize = undefined;
-                var i = 0;
-                while (i < num_dims) : (i += 1) {
-                    res[i] = i;
+                for (&res, 0..) |*r, i| {
+                    r.* = i;
                 }
                 break :dims res;
             };
@@ -179,8 +176,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
 
         fn viewOverlapping(self: Self, order: [num_dims]usize) bool {
             var overlapping = false;
-            comptime var i = 0;
-            inline while (i < num_dims - 1) : (i += 1) {
+            inline for (0..num_dims - 1) |i| {
                 overlapping = overlapping or
                     std.math.absCast(self.stride[order[i]]) < std.math.absCast(self.stride[order[i + 1]] * self.shape[order[i + 1]]);
             }
@@ -196,8 +192,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             var coord: Indices = undefined;
             var idx = @as(StrideType, index - self.offset);
 
-            comptime var i = 0;
-            inline while (i < self.stride.len) : (i += 1) {
+            inline for (0..self.stride.len) |i| {
                 coord[dims_in_order[i]] = @intCast(IndexType, @divTrunc(idx, self.stride[dims_in_order[i]]));
                 idx = @rem(idx, self.stride[dims_in_order[i]]);
             }
@@ -232,9 +227,8 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
         /// Returns the size of a view with the provided `shape`.
         pub fn sizeOf(shape: Indices) usize {
             var result: usize = 1;
-            comptime var i = 0;
-            inline while (i < num_dims) : (i += 1) {
-                result *= shape[i];
+            inline for (shape) |s| {
+                result *= s;
             }
             return result;
         }
@@ -394,8 +388,13 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
                 if (self.done) return null;
 
                 var underlying_coord: Indices = undefined;
-                for (underlying_coord) |_, i| {
-                    underlying_coord[i] = (self.offset[i] + coord[i]) % self.array_view.shape[i];
+                for (
+                    &underlying_coord,
+                    self.offset,
+                    coord,
+                    self.array_view.shape,
+                ) |*uc, offset_elt, coord_elt, shape_elt| {
+                    uc.* = (offset_elt + coord_elt) % shape_elt;
                 }
 
                 var iter_coord = self.coord;
@@ -493,12 +492,12 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
         /// if stepping is not required.
         pub fn sliceStep(self: Self, from: Indices, shape: Indices, steps: Indices) Self {
             var stride = self.stride;
-            for (stride) |_, i| {
-                stride[i] *= steps[i];
+            for (&stride, steps) |*s, step| {
+                s.* *= step;
             }
             var result_shape: Indices = undefined;
-            for (result_shape) |_, i| {
-                result_shape[i] = (shape[i] + steps[i] - 1) / steps[i];
+            for (&result_shape, shape, steps) |*r, shape_elt, step| {
+                r.* = (shape_elt + step - 1) / step;
             }
             return Self{
                 .items = self.items,
@@ -508,11 +507,10 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             };
         }
 
-
         /// creates a new view whose `dims` inner dimensions creating a sliding window
         /// over the `dims` inner-most dimensions of `self`. The strides of the window
         /// dimensions are copied from the corresponding dimensions of `self`.
-        /// Asserts `dims` < `num_dims`
+        /// Asserts `dims < num_dims`
         pub fn slidingWindow(
             self: Self,
             comptime dims: usize,
@@ -525,8 +523,12 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             // copy shape from dimensions we're not sliding along
             std.mem.copy(IndexType, shape[0 .. num_dims - dims], self.shape[0 .. num_dims - dims]);
             // reduce shape size in directions we slide along
-            for (shape[num_dims - dims .. num_dims]) |*s, i| {
-                s.* = self.shape[i + num_dims - dims] - window_shape[i] + 1;
+            for (
+                shape[num_dims - dims .. num_dims],
+                self.shape[num_dims - dims ..],
+                window_shape,
+            ) |*s, shape_elt, window_shape_elt| {
+                s.* = shape_elt - window_shape_elt + 1;
             }
             std.mem.copy(IndexType, shape[num_dims..], window_shape[0..]);
 
@@ -534,8 +536,8 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             // copy stride for the original dimensions
             std.mem.copy(StrideType, stride[0..num_dims], self.stride[0..]);
             // copy strides into corresponding window dimensions
-            for (stride[num_dims..]) |*s, i| {
-                s.* = self.stride[num_dims - dims + i];
+            for (stride[num_dims..], self.stride[num_dims - dims ..]) |*s, stride_elt| {
+                s.* = stride_elt;
             }
             return StridedArrayViewIdx(T, dims + num_dims, IndexType){
                 .items = self.items,

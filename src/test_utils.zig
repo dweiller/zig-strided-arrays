@@ -13,10 +13,8 @@ pub fn ForAllSymmetries(
         pub fn run(self: Self, array_view: *TestArrayView) !void {
             // transpositions
             {
-                var i: usize = 0;
-                while (i < TestArrayView.dim_count) : (i += 1) {
-                    var j: usize = 0;
-                    while (j < TestArrayView.dim_count) : (j += 1) {
+                for (0..TestArrayView.dim_count) |i| {
+                    for (0..TestArrayView.dim_count) |j| {
                         array_view.transpose(i, j);
                         try func(self.ctx, array_view.*);
                         array_view.transpose(i, j);
@@ -26,13 +24,10 @@ pub fn ForAllSymmetries(
 
             // transposition + flip (i.e. rotation) note that when i == j, it's just a flip
             {
-                var i: usize = 0;
-                while (i < TestArrayView.dim_count) : (i += 1) {
-                    var j: usize = 0;
-                    while (j < TestArrayView.dim_count) : (j += 1) {
+                for (0..TestArrayView.dim_count) |i| {
+                    for (0..TestArrayView.dim_count) |j| {
                         array_view.transpose(i, j);
-                        var k: usize = 0;
-                        while (k < TestArrayView.dim_count) : (k += 1) {
+                        for (0..TestArrayView.dim_count) |k| {
                             array_view.flip(k);
                             try func(self.ctx, array_view.*);
                             array_view.flip(k);
