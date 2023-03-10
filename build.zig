@@ -5,8 +5,7 @@ pub fn build(b: *std.Build) void {
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const mode = b.standardOptimizeOption(.{});
 
-    b.addModule(.{
-        .name = "strided-arrays",
+    _ = b.addModule("strided-arrays", .{
         .source_file = .{ .path = "src/strided_array.zig" },
     });
 
