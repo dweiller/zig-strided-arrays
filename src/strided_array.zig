@@ -170,7 +170,8 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
                 }
                 break :dims res;
             };
-            std.sort.sort(usize, dims[0..], self.stride, strideGreaterThan);
+            // given that `dims` should be small, insertion sort should be fine
+            std.sort.insertion(usize, dims[0..], self.stride, strideGreaterThan);
             return dims;
         }
 
