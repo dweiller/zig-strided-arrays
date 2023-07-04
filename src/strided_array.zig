@@ -122,7 +122,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             inline for (coord, self.stride) |coord_elt, stride_elt| {
                 index += coord_elt * stride_elt;
             }
-            return @intCast(usize, index);
+            return @intCast(index);
         }
 
         /// Returns the iteration index for row-major ordering of the element at `coord`,
@@ -150,7 +150,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             var idx = index;
             comptime var i = num_dims;
             inline while (i > 0) : (i -= 1) {
-                coord[i - 1] = @intCast(IndexType, idx % @as(usize, self.shape[i - 1]));
+                coord[i - 1] = @intCast(idx % @as(usize, self.shape[i - 1]));
                 idx /= self.shape[i - 1];
             }
             return coord;
@@ -194,7 +194,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             var idx = @as(StrideType, index - self.offset);
 
             inline for (0..self.stride.len) |i| {
-                coord[dims_in_order[i]] = @intCast(IndexType, @divTrunc(idx, self.stride[dims_in_order[i]]));
+                coord[dims_in_order[i]] = @intCast(@divTrunc(idx, self.stride[dims_in_order[i]]));
                 idx = @rem(idx, self.stride[dims_in_order[i]]);
             }
             return coord;
@@ -452,7 +452,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
 
         /// Flip dimension `dim` to run in the opposite direction.
         pub fn flip(self: *Self, dim: usize) void {
-            self.offset = @intCast(IndexType, @as(StrideType, self.offset) + self.stride[dim] * (self.shape[dim] - 1));
+            self.offset = @intCast(@as(StrideType, self.offset) + self.stride[dim] * (self.shape[dim] - 1));
             self.stride[dim] = -self.stride[dim];
         }
 
@@ -471,7 +471,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
                 .items = self.items,
                 .shape = shape,
                 .stride = self.stride,
-                .offset = @intCast(IndexType, self.sliceIndex(from)),
+                .offset = @intCast(self.sliceIndex(from)),
             };
         }
 
@@ -504,7 +504,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
                 .items = self.items,
                 .shape = result_shape,
                 .stride = stride,
-                .offset = @intCast(IndexType, self.sliceIndex(from)),
+                .offset = @intCast(self.sliceIndex(from)),
             };
         }
 
