@@ -67,7 +67,7 @@ test "StridedArrayView.size()" {
     try testing.expectEqual(@as(usize, 0), TestArrayView.sizeOf(.{ 0, 2, 4 }));
 
     const size_func = struct {
-        fn f(ctx: usize, av: TestArrayView) !void {
+        fn f(ctx: usize, av: TestArrayView) error{TestExpectedEqual}!void {
             try testing.expectEqual(ctx, av.size());
         }
     }.f;

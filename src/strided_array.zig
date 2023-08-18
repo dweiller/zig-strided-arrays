@@ -717,11 +717,11 @@ test "StridedArrayView.viewOverlapping()" {
     };
 
     const tests = struct {
-        fn overlap(ctx: void, av: TestArrayView) !void {
+        fn overlap(ctx: void, av: TestArrayView) error{TestUnexpectedResult}!void {
             _ = ctx;
             try testing.expect(av.viewOverlapping(av.strideOrdering()));
         }
-        fn noOverlap(ctx: void, av: TestArrayView) !void {
+        fn noOverlap(ctx: void, av: TestArrayView) error{TestUnexpectedResult}!void {
             _ = ctx;
             try testing.expect(!av.viewOverlapping(av.strideOrdering()));
         }
