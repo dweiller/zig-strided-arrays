@@ -157,8 +157,8 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
         }
 
         fn strideGreaterThan(stride: Stride, a: usize, b: usize) bool {
-            const l = std.math.absCast(stride[a]);
-            const r = std.math.absCast(stride[b]);
+            const l = @abs(stride[a]);
+            const r = @abs(stride[b]);
             return l > r;
         }
 
@@ -179,7 +179,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             var overlapping = false;
             inline for (0..num_dims - 1) |i| {
                 overlapping = overlapping or
-                    std.math.absCast(self.stride[order[i]]) < std.math.absCast(self.stride[order[i + 1]] * self.shape[order[i + 1]]);
+                    @abs(self.stride[order[i]]) < @abs(self.stride[order[i + 1]] * self.shape[order[i + 1]]);
             }
             return overlapping;
         }
