@@ -4,7 +4,7 @@ pub fn build(b: *std.Build) void {
     const mode = b.standardOptimizeOption(.{});
 
     _ = b.addModule("strided-arrays", .{
-        .source_file = .{ .path = "src/strided_array.zig" },
+        .root_source_file = .{ .path = "src/strided_array.zig" },
     });
 
     const main_tests = b.addTest(.{
