@@ -522,7 +522,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             const total_dims = dims + num_dims;
             var shape: [total_dims]IndexType = undefined;
             // copy shape from dimensions we're not sliding along
-            std.mem.copy(IndexType, shape[0 .. num_dims - dims], self.shape[0 .. num_dims - dims]);
+            @memcpy(shape[0 .. num_dims - dims], self.shape[0 .. num_dims - dims]);
             // reduce shape size in directions we slide along
             for (
                 shape[num_dims - dims .. num_dims],
@@ -531,11 +531,11 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
             ) |*s, shape_elt, window_shape_elt| {
                 s.* = shape_elt - window_shape_elt + 1;
             }
-            std.mem.copy(IndexType, shape[num_dims..], window_shape[0..]);
+            @memcpy(shape[num_dims..], window_shape[0..]);
 
             var stride: [total_dims]StrideType = undefined;
             // copy stride for the original dimensions
-            std.mem.copy(StrideType, stride[0..num_dims], self.stride[0..]);
+            @memcpy(stride[0..num_dims], self.stride[0..]);
             // copy strides into corresponding window dimensions
             for (stride[num_dims..], self.stride[num_dims - dims ..]) |*s, stride_elt| {
                 s.* = stride_elt;
