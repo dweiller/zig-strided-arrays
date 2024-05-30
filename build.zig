@@ -4,11 +4,11 @@ pub fn build(b: *std.Build) void {
     const mode = b.standardOptimizeOption(.{});
 
     _ = b.addModule("strided-arrays", .{
-        .root_source_file = .{ .path = "src/strided_array.zig" },
+        .root_source_file = b.path("src/strided_array.zig"),
     });
 
     const main_tests = b.addTest(.{
-        .root_source_file = .{ .path = "src/test.zig" },
+        .root_source_file = b.path("src/test.zig"),
         .optimize = mode,
     });
     const run_main_tests = b.addRunArtifact(main_tests);
