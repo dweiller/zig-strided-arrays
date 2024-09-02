@@ -19,8 +19,10 @@ pub const ViewError = error{
 };
 
 pub fn StridedArrayView(comptime T: type, comptime num_dims: usize) type {
-    const bit_size = @typeInfo(usize).Int.bits / 2;
-    return StridedArrayViewIdx(T, num_dims, @Type(.{ .Int = .{ .bits = bit_size, .signedness = .unsigned } }));
+    const bit_size = @typeInfo(usize).int.bits / 2;
+    return StridedArrayViewIdx(T, num_dims, @Type(.{
+        .int = .{ .bits = bit_size, .signedness = .unsigned },
+    }));
 }
 
 pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime IndexType: type) type {
@@ -29,16 +31,19 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
 
         const info = @typeInfo(IndexType);
         comptime {
-            if (info != .Int or info.Int.signedness == .signed) {
+            if (info != .int or info.int.signedness == .signed) {
                 @compileError("StridedArrayView IndexType must be an unsigned integer type");
             }
-            if (info.Int.bits > 64) {
-                @compileError(std.fmt.comptimePrint("Maximum allowed bit size is for IndexType is 64; got {d}-bit type", .{info.Int.bits}));
+            if (info.int.bits > 64) {
+                @compileError(std.fmt.comptimePrint(
+                    "Maximum allowed bit size is for IndexType is 64; got {d}-bit type",
+                    .{info.int.bits},
+                ));
             }
         }
 
         pub const Indices = [num_dims]IndexType;
-        pub const StrideType = @Type(.{ .Int = .{ .bits = 2 * info.Int.bits, .signedness = .signed } });
+        pub const StrideType = @Type(.{ .int = .{ .bits = 2 * info.int.bits, .signedness = .signed } });
         pub const Stride = [num_dims]StrideType;
 
         pub const dim_count = num_dims;
