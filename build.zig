@@ -8,8 +8,11 @@ pub fn build(b: *std.Build) void {
     });
 
     const main_tests = b.addTest(.{
-        .root_source_file = b.path("src/test.zig"),
-        .optimize = mode,
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/test.zig"),
+            .optimize = mode,
+            .target = b.graph.host,
+        }),
     });
     const run_main_tests = b.addRunArtifact(main_tests);
 
