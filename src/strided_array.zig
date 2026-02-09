@@ -20,9 +20,7 @@ pub const ViewError = error{
 
 pub fn StridedArrayView(comptime T: type, comptime num_dims: usize) type {
     const bit_size = @typeInfo(usize).int.bits / 2;
-    return StridedArrayViewIdx(T, num_dims, @Type(.{
-        .int = .{ .bits = bit_size, .signedness = .unsigned },
-    }));
+    return StridedArrayViewIdx(T, num_dims, @Int(.unsigned, bit_size));
 }
 
 pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime IndexType: type) type {
@@ -43,7 +41,7 @@ pub fn StridedArrayViewIdx(comptime T: type, comptime num_dims: usize, comptime 
         }
 
         pub const Indices = [num_dims]IndexType;
-        pub const StrideType = @Type(.{ .int = .{ .bits = 2 * info.int.bits, .signedness = .signed } });
+        pub const StrideType = @Int(.signed, 2 * info.int.bits);
         pub const Stride = [num_dims]StrideType;
 
         pub const dim_count = num_dims;
