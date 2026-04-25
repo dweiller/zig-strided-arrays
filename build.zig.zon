@@ -2,7 +2,7 @@
     .name = .strided_array,
     .fingerprint = 0xd8319dc2ec61126d,
     .version = "0.0.0",
-    .minimum_zig_version = "0.16.0-dev.1484+d0ba6642b",
+    .minimum_zig_version = "0.16.0",
     .paths = .{
         "src/",
         "build.zig",
